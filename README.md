@@ -1,22 +1,12 @@
-[filum-splash.html](https://github.com/user-attachments/files/27770265/filum-splash.html)
-[filum-splash.html](https://github.com/user-attachments/files/27769856/filum-splash.html)
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Filum – Splash</title><!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Filum – Splash</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       display: flex;
@@ -30,395 +20,681 @@
     .phone {
       width: 375px;
       height: 812px;
-      background: #6685f1;
       border-radius: 50px;
       overflow: hidden;
       position: relative;
-      display: flex;
-      flex-direction: column;
       box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
     }
 
-    /* Status bar */
-    .status-bar {
+    /* ── SCREENS ── */
+    .screen {
+      position: absolute;
+      inset: 0;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 28px 0;
-      height: 44px;
-      position: relative;
-      z-index: 10;
+      flex-direction: column;
+      transition: opacity 0.4s ease, transform 0.4s ease;
     }
 
-    .status-time {
-      color: #fff;
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: -0.3px;
+    .screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(40px);
     }
 
-    .status-icons {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+    /* ── SCREEN 1 ── */
+    #screen1 { background: #6685f1; cursor: pointer; }
 
-    .status-icons svg {
-      fill: #fff;
-    }
+    .s1-status { display: flex; justify-content: space-between; align-items: center; padding: 14px 28px 0; height: 44px; }
+    .s1-status .time { color: #fff; font-size: 15px; font-weight: 600; }
+    .s1-status .icons { display: flex; align-items: center; gap: 6px; }
+    .s1-status .icons svg { fill: #fff; }
 
-    /* Main content */
-    .content {
+    .s1-content {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 0;
-      position: relative;
-      z-index: 2;
     }
 
-    /* App icon */
     .app-icon {
-      width: 120px;
-      height: 120px;
+      width: 120px; height: 120px;
       background: #fff;
       border-radius: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       margin-bottom: 28px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
     }
+    .app-icon img { width: 100px; height: 100px; object-fit: contain; display: block; margin: auto; }
 
-    .app-icon img {
-      width: 100px;
-      height: 100px;
-      object-fit: contain;
-      display: block;
-      margin: auto;
-    }
+    .app-name { color: #fff; font-size: 36px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+    .app-subtitle { color: rgba(255,255,255,0.65); font-size: 16px; }
 
-    .app-name {
-      color: #fff;
-      font-size: 36px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      margin-bottom: 8px;
-    }
+    .s1-footer { display: flex; flex-direction: column; align-items: center; gap: 12px; padding-bottom: 48px; }
+    .tagline { color: rgba(255,255,255,0.75); font-size: 15px; }
+    .dots { display: flex; gap: 6px; }
+    .dot { width: 20px; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.35); }
+    .dot.active { background: #fff; }
 
-    .app-subtitle {
-      color: rgba(255, 255, 255, 0.65);
-      font-size: 16px;
-      font-weight: 400;
-      letter-spacing: 0.1px;
-    }
+    .home-indicator { height: 34px; display: flex; align-items: center; justify-content: center; }
+    .home-bar { width: 134px; height: 5px; border-radius: 3px; }
+    .home-bar.light { background: rgba(255,255,255,0.5); }
+    .home-bar.dark  { background: rgba(0,0,0,0.2); }
 
-    /* Footer */
-    .footer {
+    /* ── SCREEN 2 ── */
+    #screen2 { background: #f2f4fb; }
+
+    .s2-status { display: flex; justify-content: space-between; align-items: center; padding: 14px 28px 0; height: 44px; }
+    .s2-status .time { color: #111; font-size: 15px; font-weight: 600; }
+    .s2-status .icons { display: flex; align-items: center; gap: 6px; }
+    .s2-status .icons svg { fill: #111; }
+
+    /* Progress bar */
+    .progress-bar {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      padding-bottom: 48px;
-      position: relative;
-      z-index: 2;
+      gap: 5px;
+      padding: 10px 20px 0;
     }
-
-    .tagline {
-      color: rgba(255, 255, 255, 0.75);
-      font-size: 15px;
-      font-weight: 400;
-      letter-spacing: 0.2px;
-    }
-
-    .dots {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .dot {
-      width: 20px;
+    .progress-seg {
+      flex: 1;
       height: 3px;
       border-radius: 2px;
-      background: rgba(255, 255, 255, 0.35);
+      background: #dde0ee;
     }
+    .progress-seg.done { background: #6685f1; }
 
-    .dot.active {
-      background: #fff;
-    }
-
-    /* Home indicator */
-    .home-indicator {
-      height: 34px;
+    /* Illustration area */
+    .illustration {
+      flex: 1;
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
-      z-index: 2;
     }
 
-    .home-bar {
-      width: 134px;
-      height: 5px;
-      background: rgba(255, 255, 255, 0.5);
-      border-radius: 3px;
-    }
-  </style>
-</head>
-<body>
-  <div class="phone">
-
-    <!-- Status bar -->
-    <div class="status-bar">
-      <span class="status-time">9:41</span>
-      <div class="status-icons">
-        <!-- Signal bars -->
-        <svg width="17" height="12" viewBox="0 0 17 12">
-          <rect x="0"  y="7" width="3" height="5" rx="0.5"/>
-          <rect x="4"  y="5" width="3" height="7" rx="0.5"/>
-          <rect x="8"  y="3" width="3" height="9" rx="0.5"/>
-          <rect x="12" y="0" width="3" height="12" rx="0.5"/>
-        </svg>
-        <!-- WiFi -->
-        <svg width="16" height="12" viewBox="0 0 16 12">
-          <path d="M8 9.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/>
-          <path d="M8 6.2a5.1 5.1 0 0 1 3.6 1.5l1.4-1.4A7.1 7.1 0 0 0 8 4a7.1 7.1 0 0 0-5 2.3l1.4 1.4A5.1 5.1 0 0 1 8 6.2z"/>
-          <path d="M8 2.9a8.5 8.5 0 0 1 6 2.5L15.4 4A10.5 10.5 0 0 0 8 0.9a10.5 10.5 0 0 0-7.4 3.1L2 5.4A8.5 8.5 0 0 1 8 2.9z"/>
-        </svg>
-        <!-- Battery -->
-        <svg width="25" height="12" viewBox="0 0 25 12">
-          <rect x="0" y="1" width="21" height="10" rx="2.5" stroke="white" stroke-width="1" fill="none"/>
-          <rect x="22" y="3.5" width="2" height="5" rx="1" fill="white" opacity="0.4"/>
-          <rect x="1.5" y="2.5" width="17" height="7" rx="1.5" fill="white"/>
-        </svg>
-      </div>
-    </div>
-
-    <!-- Center content -->
-    <div class="content">
-      <div class="app-icon">
-        <img src="logo.png" alt="Filum logo" />
-      </div>
-
-      <h1 class="app-name">filum</h1>
-      <p class="app-subtitle">Bienvenue sur Filum</p>
-    </div>
-
-    <!-- Footer -->
-    <div class="footer">
-      <span class="tagline">Le savoir circule</span>
-      <div class="dots">
-        <div class="dot active"></div>
-        <div class="dot"></div>
-        <div class="dot"></div>
-      </div>
-    </div>
-
-    <!-- Home indicator -->
-    <div class="home-indicator">
-      <div class="home-bar"></div>
-    </div>
-
-  </div>
-</body>
-</html>
-
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      background: #1a1a2e;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
-
-    .phone {
-      width: 375px;
-      height: 812px;
-      background: #6b6fe8;
-      border-radius: 50px;
-      overflow: hidden;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
-    }
-
-    /* Status bar */
-    .status-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 28px 0;
-      height: 44px;
-      position: relative;
-      z-index: 10;
-    }
-
-    .status-time {
-      color: #fff;
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: -0.3px;
-    }
-
-    .status-icons {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .status-icons svg {
-      fill: #fff;
-    }
-
-    /* Decorative arcs */
-    .arcs {
+    /* Glow blob behind circles */
+    .blob {
       position: absolute;
-      inset: 0;
-      overflow: hidden;
+      width: 220px; height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(180,190,240,0.35) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -45%);
+    }
+
+    /* SVG for dashed connectors */
+    .connectors {
+      position: absolute;
+      width: 100%; height: 100%;
+      top: 0; left: 0;
       pointer-events: none;
     }
 
-    .arcs svg {
+    /* Circles */
+    .topic-circle {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 900px;
-      height: 900px;
-      opacity: 0.18;
-    }
-
-    /* Main content */
-    .content {
-      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 0;
-      position: relative;
-      z-index: 2;
+      gap: 8px;
     }
 
-    /* App icon */
-    .app-icon {
-      width: 120px;
-      height: 120px;
+    .circle-ring {
+      border-radius: 50%;
+      border: 5px solid #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .circle-ring.purple { width: 110px; height: 110px; background: #e3daf5; }
+    .circle-ring.yellow { width: 110px; height: 110px; background: #f5e9be; }
+    .circle-ring.blue   { width: 100px; height: 100px; background: #c8e0f5; }
+
+    .circle-label {
       background: #fff;
-      border-radius: 28px;
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #333;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+
+    /* Positions */
+    .topic-circle.aquarelle { top: 80px; left: 30px; }
+    .topic-circle.cuisine   { top: 80px; right: 30px; }
+    .topic-circle.photo     { bottom: 60px; left: 50%; transform: translateX(-50%); }
+
+    /* Small orange rings */
+    .small-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 3px solid #f5a623;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; color: #f5a623;
+    }
+    .small-ring.left  { width: 38px; height: 38px; bottom: 140px; left: 20px; }
+    .small-ring.right { width: 32px; height: 32px; bottom: 155px; right: 40px; }
+
+    /* Bottom section */
+    .s2-bottom {
+      padding: 0 28px 0;
+    }
+
+    .s2-title {
+      font-size: 30px;
+      font-weight: 800;
+      color: #111;
+      text-align: center;
+      line-height: 1.2;
+      margin-bottom: 14px;
+    }
+
+    .s2-desc {
+      font-size: 15px;
+      color: #888;
+      text-align: center;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .btn-primary {
+      display: block;
+      width: 100%;
+      padding: 18px;
+      background: #6685f1;
+      color: #fff;
+      font-size: 17px;
+      font-weight: 600;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      margin-bottom: 2px;
+    }
+    .btn-primary:active { opacity: 0.85; }
+
+    .btn-secondary {
+      display: block;
+      width: 100%;
+      padding: 18px;
+      background: transparent;
+      color: #444;
+      font-size: 17px;
+      font-weight: 500;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+    }
+
+    /* ── SCREEN 3 ── */
+    #screen3 { background: #f2f4fb; }
+
+    .s3-status { display: flex; justify-content: space-between; align-items: center; padding: 14px 28px 0; height: 44px; flex-shrink: 0; }
+    .s3-status .time { color: #111; font-size: 15px; font-weight: 600; }
+    .s3-status .icons { display: flex; align-items: center; gap: 6px; }
+    .s3-status .icons svg { fill: #111; }
+
+    .s3-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px 0;
+      flex-shrink: 0;
+    }
+    .s3-back {
+      font-size: 22px;
+      color: #333;
+      background: none;
+      border: none;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px 8px 4px 0;
+    }
+    .s3-skip {
+      font-size: 15px;
+      color: #aaa;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .s3-progress { display: flex; gap: 5px; padding: 8px 20px 0; flex-shrink: 0; }
+
+    .s3-step-label {
+      font-size: 13px;
+      color: #aaa;
+      padding: 6px 20px 0;
+      flex-shrink: 0;
+    }
+
+    .s3-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 20px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .s3-scroll::-webkit-scrollbar { display: none; }
+
+    .s3-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: #111;
+      line-height: 1.2;
+      margin: 14px 0 6px;
+    }
+    .s3-subtitle {
+      font-size: 14px;
+      color: #777;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    .tag-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #aaa;
+      letter-spacing: 0.8px;
+      margin: 16px 0 10px;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .tag {
+      padding: 9px 16px;
+      border-radius: 50px;
+      border: 1.5px solid #dde0ee;
+      background: #fff;
+      font-size: 14px;
+      font-weight: 500;
+      color: #222;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .tag.selected {
+      border-color: #6685f1;
+      color: #6685f1;
+      background: #fff;
+    }
+    .tag.selected::before { content: "✓ "; }
+
+    .s3-bottom {
+      flex-shrink: 0;
+      padding: 10px 20px 0;
+      background: #f2f4fb;
+      border-top: 1px solid #e8eaf5;
+    }
+    .s3-count-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .s3-count { font-size: 13px; color: #555; }
+    .s3-min   { font-size: 13px; color: #aaa; }
+
+    /* ── SCREEN 4 ── */
+    #screen4 { background: #f2f4fb; }
+
+    .s4-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 16px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .s4-scroll::-webkit-scrollbar { display: none; }
+
+    .s4-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: #111;
+      line-height: 1.2;
+      margin: 14px 0 6px;
+    }
+    .s4-subtitle {
+      font-size: 14px;
+      color: #777;
+      margin-bottom: 16px;
+    }
+
+    .topic-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+    .topic-card-header {
       display: flex;
       align-items: center;
-      justify-content: center;
-      margin-bottom: 28px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      gap: 10px;
+      margin-bottom: 12px;
     }
+    .topic-card-icon { font-size: 22px; line-height: 1; }
+    .topic-card-name { font-size: 16px; font-weight: 700; color: #111; }
 
-    .app-icon svg {
-      width: 64px;
-      height: 64px;
+    .role-btns {
+      display: flex;
+      gap: 8px;
     }
-
-    .app-name {
+    .role-btn {
+      flex: 1;
+      padding: 10px 4px;
+      border-radius: 12px;
+      border: 1.5px solid #dde0ee;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      color: #333;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .role-btn.active {
+      background: #6685f1;
       color: #fff;
-      font-size: 36px;
+      border-color: #6685f1;
+    }
+
+    .s4-bottom {
+      flex-shrink: 0;
+      padding: 10px 20px 0;
+      background: #f2f4fb;
+      border-top: 1px solid #e8eaf5;
+    }
+
+    /* ── SCREEN 5 ── */
+    #screen5 { background: #f2f4fb; }
+
+    .s5-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 16px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .s5-scroll::-webkit-scrollbar { display: none; }
+
+    .s5-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: #111;
+      margin: 14px 0 8px;
+    }
+    .s5-subtitle {
+      font-size: 14px;
+      color: #777;
+      line-height: 1.5;
+      margin-bottom: 22px;
+    }
+    .s5-label {
+      font-size: 14px;
       font-weight: 700;
-      letter-spacing: -0.5px;
+      color: #111;
       margin-bottom: 8px;
     }
 
-    .app-subtitle {
-      color: rgba(255, 255, 255, 0.65);
-      font-size: 16px;
-      font-weight: 400;
-      letter-spacing: 0.1px;
-    }
-
-    /* Footer */
-    .footer {
+    .s5-input {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 12px;
-      padding-bottom: 48px;
-      position: relative;
-      z-index: 2;
-    }
-
-    .tagline {
-      color: rgba(255, 255, 255, 0.75);
-      font-size: 15px;
-      font-weight: 400;
-      letter-spacing: 0.2px;
-    }
-
-    .dots {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .dot {
-      width: 20px;
-      height: 3px;
-      border-radius: 2px;
-      background: rgba(255, 255, 255, 0.35);
-    }
-
-    .dot.active {
+      gap: 10px;
       background: #fff;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
+    .s5-input input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 14px;
+      color: #222;
+      font-family: inherit;
+    }
+    .s5-input input::placeholder { color: #aaa; }
+    .s5-input:focus-within { box-shadow: 0 0 0 2px #6685f1, 0 2px 8px rgba(0,0,0,0.05); }
+    .s5-input svg { flex-shrink: 0; }
 
-    /* Home indicator */
-    .home-indicator {
-      height: 34px;
+    .s5-loc-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
-      z-index: 2;
+      gap: 8px;
+      width: 100%;
+      padding: 14px;
+      background: #fff;
+      border: 1.5px solid #6685f1;
+      border-radius: 14px;
+      color: #6685f1;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 18px;
     }
 
-    .home-bar {
-      width: 134px;
-      height: 5px;
-      background: rgba(255, 255, 255, 0.5);
-      border-radius: 3px;
+    .s5-apercu-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #aaa;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+
+    /* Fake map */
+    .fake-map {
+      position: relative;
+      background: #e8ecf8;
+      border-radius: 16px;
+      overflow: hidden;
+      height: 200px;
+      margin-bottom: 16px;
+    }
+
+    .map-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.6fr 1fr;
+      grid-template-rows: 1fr 1fr 1fr;
+      gap: 8px;
+      padding: 10px;
+      height: 100%;
+    }
+
+    .map-block {
+      background: #cdd4ee;
+      border-radius: 6px;
+    }
+
+    .map-pin {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -60%);
+      width: 36px;
+      height: 36px;
+      background: rgba(102, 133, 241, 0.25);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .map-pin-inner {
+      width: 14px;
+      height: 14px;
+      background: #6685f1;
+      border-radius: 50%;
+      border: 2.5px solid #fff;
+    }
+
+    .map-info {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      right: 10px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .map-info { z-index: 1000; pointer-events: none; }
+    .map-info strong { color: #111; font-weight: 700; }
+    .map-info span   { color: #aaa; }
+    #s5-map { width: 100%; height: 100%; }
+
+    .s5-bottom {
+      flex-shrink: 0;
+      padding: 10px 20px 0;
+      background: #f2f4fb;
+      border-top: 1px solid #e8eaf5;
+    }
+
+    /* ── SCREEN 6 ── */
+    #screen6 { background: #f2f4fb; }
+
+    .s6-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 20px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .s6-scroll::-webkit-scrollbar { display: none; }
+
+    .s6-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: #111;
+      margin: 14px 0 8px;
+      line-height: 1.15;
+    }
+    .s6-subtitle {
+      font-size: 15px;
+      color: #777;
+      line-height: 1.5;
+      margin-bottom: 0;
+    }
+
+    .s6-illustration {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px 0 28px;
+      position: relative;
+    }
+
+    .coin-blob {
+      width: 180px;
+      height: 130px;
+      background: radial-gradient(ellipse, rgba(245, 196, 42, 0.18) 0%, transparent 68%);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .coin-stack {
+      position: relative;
+      width: 90px;
+      height: 80px;
+    }
+
+    .coin-layer {
+      position: absolute;
+      width: 90px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1.5px solid #c88800;
+      left: 0;
+    }
+    .c1 { top: 0;    z-index: 8; background: linear-gradient(180deg, #fde97a 0%, #f7c42a 100%); display: flex; align-items: center; justify-content: center; }
+    .c2 { top: 9px;  z-index: 7; background: #f2bb1a; }
+    .c3 { top: 18px; z-index: 6; background: #edb510; }
+    .c4 { top: 27px; z-index: 5; background: #e9af08; }
+    .c5 { top: 36px; z-index: 4; background: #e5aa04; }
+    .c6 { top: 45px; z-index: 3; background: #e1a500; }
+    .c7 { top: 54px; z-index: 2; background: #dc9f00; }
+    .c8 { top: 63px; z-index: 1; background: #d79900; }
+
+    .coin-text {
+      font-size: 9px;
+      font-weight: 800;
+      color: #996600;
+      letter-spacing: 0.3px;
+      position: relative;
+      z-index: 9;
+    }
+
+    .coin-plus {
+      position: absolute;
+      color: #f5a623;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .s6-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .s6-card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .s6-card-icon.green  { background: #e6f8ee; }
+    .s6-card-icon.blue   { background: #e8eaf8; }
+    .s6-card-icon.yellow { background: #fff4d6; }
+
+    .s6-card-body { flex: 1; }
+    .s6-card-title { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 4px; }
+    .s6-card-desc  { font-size: 13px; color: #777; line-height: 1.5; margin: 0; }
+
+    .s6-bottom {
+      flex-shrink: 0;
+      padding: 10px 20px 0;
+      background: #f2f4fb;
+      border-top: 1px solid #e8eaf5;
     }
   </style>
 </head>
 <body>
-  <div class="phone">
+<div class="phone">
 
-    <!-- Status bar -->
-    <div class="status-bar">
-      <span class="status-time">9:41</span>
-      <div class="status-icons">
-        <!-- Signal bars -->
+  <!-- ══════════════ SCREEN 1 ══════════════ -->
+  <div class="screen" id="screen1" onclick="goToScreen2()">
+
+    <div class="s1-status">
+      <span class="time">9:41</span>
+      <div class="icons">
         <svg width="17" height="12" viewBox="0 0 17 12">
-          <rect x="0"  y="7" width="3" height="5" rx="0.5"/>
-          <rect x="4"  y="5" width="3" height="7" rx="0.5"/>
-          <rect x="8"  y="3" width="3" height="9" rx="0.5"/>
+          <rect x="0" y="7" width="3" height="5" rx="0.5"/>
+          <rect x="4" y="5" width="3" height="7" rx="0.5"/>
+          <rect x="8" y="3" width="3" height="9" rx="0.5"/>
           <rect x="12" y="0" width="3" height="12" rx="0.5"/>
         </svg>
-        <!-- WiFi -->
         <svg width="16" height="12" viewBox="0 0 16 12">
           <path d="M8 9.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/>
           <path d="M8 6.2a5.1 5.1 0 0 1 3.6 1.5l1.4-1.4A7.1 7.1 0 0 0 8 4a7.1 7.1 0 0 0-5 2.3l1.4 1.4A5.1 5.1 0 0 1 8 6.2z"/>
           <path d="M8 2.9a8.5 8.5 0 0 1 6 2.5L15.4 4A10.5 10.5 0 0 0 8 0.9a10.5 10.5 0 0 0-7.4 3.1L2 5.4A8.5 8.5 0 0 1 8 2.9z"/>
         </svg>
-        <!-- Battery -->
         <svg width="25" height="12" viewBox="0 0 25 12">
           <rect x="0" y="1" width="21" height="10" rx="2.5" stroke="white" stroke-width="1" fill="none"/>
           <rect x="22" y="3.5" width="2" height="5" rx="1" fill="white" opacity="0.4"/>
@@ -427,41 +703,15 @@
       </div>
     </div>
 
-    <!-- Background arcs -->
-    <div class="arcs">
-      <svg viewBox="0 0 900 900" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="450" cy="450" r="120" stroke="white" stroke-width="1"/>
-        <circle cx="450" cy="450" r="200" stroke="white" stroke-width="1"/>
-        <circle cx="450" cy="450" r="290" stroke="white" stroke-width="1"/>
-        <circle cx="450" cy="450" r="390" stroke="white" stroke-width="1"/>
-        <circle cx="450" cy="450" r="500" stroke="white" stroke-width="1"/>
-      </svg>
-    </div>
-
-    <!-- Center content -->
-    <div class="content">
+    <div class="s1-content">
       <div class="app-icon">
-        <!-- Stylized "ff" / cursive f logo -->
-        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Left f -->
-          <path d="M14 44 C14 44 14 28 14 24 C14 18 18 13 24 13 C24 13 26 13 27 14"
-                stroke="#6b6fe8" stroke-width="3" stroke-linecap="round" fill="none"/>
-          <line x1="10" y1="30" x2="26" y2="30" stroke="#6b6fe8" stroke-width="3" stroke-linecap="round"/>
-          <!-- Right f / descending curve -->
-          <path d="M28 44 C28 44 28 28 28 24 C28 18 32 13 38 13 C38 13 40 13 41 14"
-                stroke="#6b6fe8" stroke-width="3" stroke-linecap="round" fill="none"/>
-          <path d="M28 50 C28 54 30 58 34 58 C36 58 38 57 39 55"
-                stroke="#6b6fe8" stroke-width="3" stroke-linecap="round" fill="none"/>
-          <line x1="24" y1="30" x2="40" y2="30" stroke="#6b6fe8" stroke-width="3" stroke-linecap="round"/>
-        </svg>
+        <img src="logo.png" alt="Filum logo" />
       </div>
-
       <h1 class="app-name">filum</h1>
       <p class="app-subtitle">Bienvenue sur Filum</p>
     </div>
 
-    <!-- Footer -->
-    <div class="footer">
+    <div class="s1-footer">
       <span class="tagline">Le savoir circule</span>
       <div class="dots">
         <div class="dot active"></div>
@@ -470,11 +720,588 @@
       </div>
     </div>
 
-    <!-- Home indicator -->
     <div class="home-indicator">
-      <div class="home-bar"></div>
+      <div class="home-bar light"></div>
     </div>
 
   </div>
+
+  <!-- ══════════════ SCREEN 2 ══════════════ -->
+  <div class="screen hidden" id="screen2">
+
+    <div class="s2-status">
+      <span class="time">9:41</span>
+      <div class="icons">
+        <svg width="17" height="12" viewBox="0 0 17 12">
+          <rect x="0" y="7" width="3" height="5" rx="0.5"/>
+          <rect x="4" y="5" width="3" height="7" rx="0.5"/>
+          <rect x="8" y="3" width="3" height="9" rx="0.5"/>
+          <rect x="12" y="0" width="3" height="12" rx="0.5"/>
+        </svg>
+        <svg width="16" height="12" viewBox="0 0 16 12">
+          <path d="M8 9.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/>
+          <path d="M8 6.2a5.1 5.1 0 0 1 3.6 1.5l1.4-1.4A7.1 7.1 0 0 0 8 4a7.1 7.1 0 0 0-5 2.3l1.4 1.4A5.1 5.1 0 0 1 8 6.2z"/>
+          <path d="M8 2.9a8.5 8.5 0 0 1 6 2.5L15.4 4A10.5 10.5 0 0 0 8 0.9a10.5 10.5 0 0 0-7.4 3.1L2 5.4A8.5 8.5 0 0 1 8 2.9z"/>
+        </svg>
+        <svg width="25" height="12" viewBox="0 0 25 12">
+          <rect x="0" y="1" width="21" height="10" rx="2.5" stroke="black" stroke-width="1" fill="none"/>
+          <rect x="22" y="3.5" width="2" height="5" rx="1" fill="black" opacity="0.4"/>
+          <rect x="1.5" y="2.5" width="17" height="7" rx="1.5" fill="black"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Progress bar: 6 segments, 1st active -->
+    <div class="progress-bar">
+      <div class="progress-seg done"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+    </div>
+
+    <!-- Illustration -->
+    <div class="illustration">
+      <div class="blob"></div>
+
+      <!-- Dashed connectors drawn in SVG -->
+      <svg class="connectors" viewBox="0 0 375 380" fill="none">
+        <!-- Aquarelle (85,140) → Cuisine (290,140) -->
+        <line x1="140" y1="130" x2="235" y2="130"
+              stroke="#a0aadd" stroke-width="1.5" stroke-dasharray="6 5"/>
+        <!-- Aquarelle (85,140) → Photo (187,280) -->
+        <line x1="120" y1="175" x2="168" y2="270"
+              stroke="#a0aadd" stroke-width="1.5" stroke-dasharray="6 5"/>
+        <!-- Cuisine (290,140) → Photo (187,280) -->
+        <line x1="255" y1="175" x2="207" y2="270"
+              stroke="#a0aadd" stroke-width="1.5" stroke-dasharray="6 5"/>
+      </svg>
+
+      <!-- Aquarelle -->
+      <div class="topic-circle aquarelle">
+        <div class="circle-ring purple"></div>
+        <div class="circle-label">Aquarelle</div>
+      </div>
+
+      <!-- Cuisine -->
+      <div class="topic-circle cuisine">
+        <div class="circle-ring yellow"></div>
+        <div class="circle-label">Cuisine</div>
+      </div>
+
+      <!-- Photo -->
+      <div class="topic-circle photo">
+        <div class="circle-ring blue"></div>
+        <div class="circle-label">Photo</div>
+      </div>
+
+      <!-- Small orange rings -->
+      <div class="small-ring left">cr</div>
+      <div class="small-ring right"></div>
+    </div>
+
+    <!-- Bottom -->
+    <div class="s2-bottom">
+      <h2 class="s2-title">Bienvenue sur Filum</h2>
+      <p class="s2-desc">Apprenez et transmettez des savoirs près de chez vous. Créez du lien et valorisez vos compétences au sein de votre communauté locale.</p>
+      <button class="btn-primary" onclick="goToScreen3()">Commencer</button>
+      <button class="btn-secondary">Se connecter</button>
+    </div>
+
+    <div class="home-indicator">
+      <div class="home-bar dark"></div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════ SCREEN 3 ══════════════ -->
+  <div class="screen hidden" id="screen3">
+
+    <!-- Status bar -->
+    <div class="s3-status">
+      <span class="time">9:41</span>
+      <div class="icons">
+        <svg width="17" height="12" viewBox="0 0 17 12">
+          <rect x="0" y="7" width="3" height="5" rx="0.5"/>
+          <rect x="4" y="5" width="3" height="7" rx="0.5"/>
+          <rect x="8" y="3" width="3" height="9" rx="0.5"/>
+          <rect x="12" y="0" width="3" height="12" rx="0.5"/>
+        </svg>
+        <svg width="16" height="12" viewBox="0 0 16 12">
+          <path d="M8 9.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/>
+          <path d="M8 6.2a5.1 5.1 0 0 1 3.6 1.5l1.4-1.4A7.1 7.1 0 0 0 8 4a7.1 7.1 0 0 0-5 2.3l1.4 1.4A5.1 5.1 0 0 1 8 6.2z"/>
+          <path d="M8 2.9a8.5 8.5 0 0 1 6 2.5L15.4 4A10.5 10.5 0 0 0 8 0.9a10.5 10.5 0 0 0-7.4 3.1L2 5.4A8.5 8.5 0 0 1 8 2.9z"/>
+        </svg>
+        <svg width="25" height="12" viewBox="0 0 25 12">
+          <rect x="0" y="1" width="21" height="10" rx="2.5" stroke="black" stroke-width="1" fill="none"/>
+          <rect x="22" y="3.5" width="2" height="5" rx="1" fill="black" opacity="0.4"/>
+          <rect x="1.5" y="2.5" width="17" height="7" rx="1.5" fill="black"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Back / Skip -->
+    <div class="s3-nav">
+      <button class="s3-back" onclick="goToScreen2()">‹</button>
+      <button class="s3-skip">Passer</button>
+    </div>
+
+    <!-- Progress bar: 2/6 done -->
+    <div class="s3-progress progress-bar">
+      <div class="progress-seg done"></div>
+      <div class="progress-seg done"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+    </div>
+    <p class="s3-step-label">Étape 2 sur 6</p>
+
+    <!-- Scrollable content -->
+    <div class="s3-scroll">
+      <h2 class="s3-title">Qu'aimez-vous faire&nbsp;?</h2>
+      <p class="s3-subtitle">Sélectionnez tous les sujets qui vous intéressent.</p>
+
+      <!-- ARTS & CRÉATIVITÉ -->
+      <p class="tag-section-title">ARTS &amp; CRÉATIVITÉ</p>
+      <div class="tag-row">
+        <span class="tag" onclick="toggleTag(this)">Photo argentique</span>
+        <span class="tag" onclick="toggleTag(this)">Aquarelle</span>
+        <span class="tag" onclick="toggleTag(this)">Dessin</span>
+      </div>
+      <div class="tag-row">
+        <span class="tag" onclick="toggleTag(this)">Sculpture</span>
+        <span class="tag" onclick="toggleTag(this)">Couture</span>
+        <span class="tag" onclick="toggleTag(this)">Calligraphie</span>
+      </div>
+
+      <!-- CUISINE & MAISON -->
+      <p class="tag-section-title">CUISINE &amp; MAISON</p>
+      <div class="tag-row">
+        <span class="tag" onclick="toggleTag(this)">Cuisine</span>
+        <span class="tag" onclick="toggleTag(this)">Pâtisserie</span>
+        <span class="tag" onclick="toggleTag(this)">Jardinage</span>
+      </div>
+      <div class="tag-row">
+        <span class="tag" onclick="toggleTag(this)">Bricolage</span>
+        <span class="tag" onclick="toggleTag(this)">Fermentation</span>
+      </div>
+
+      <!-- LANGUES -->
+      <p class="tag-section-title">LANGUES</p>
+      <div class="tag-row">
+        <span class="tag" onclick="toggleTag(this)">Anglais</span>
+        <span class="tag" onclick="toggleTag(this)">Espagnol</span>
+        <span class="tag" onclick="toggleTag(this)">Italien</span>
+        <span class="tag" onclick="toggleTag(this)">Allemand</span>
+      </div>
+      <div class="tag-row">
+        <span class="tag" onclick="toggleTag(this)">Portugais</span>
+        <span class="tag" onclick="toggleTag(this)">Mandarin</span>
+        <span class="tag" onclick="toggleTag(this)">LSF</span>
+      </div>
+
+      <!-- MUSIQUE -->
+      <p class="tag-section-title">MUSIQUE</p>
+      <div class="tag-row">
+        <span class="tag" onclick="toggleTag(this)">Guitare</span>
+        <span class="tag" onclick="toggleTag(this)">Piano</span>
+        <span class="tag" onclick="toggleTag(this)">Chant</span>
+        <span class="tag" onclick="toggleTag(this)">Batterie</span>
+      </div>
+      <div class="tag-row" style="margin-bottom: 16px;">
+        <span class="tag" onclick="toggleTag(this)">Violon</span>
+        <span class="tag" onclick="toggleTag(this)">Djembé</span>
+      </div>
+    </div>
+
+    <!-- Fixed bottom -->
+    <div class="s3-bottom">
+      <div class="s3-count-row">
+        <span class="s3-count" id="s3-count">0 catégorie sélectionnée</span>
+        <span class="s3-min">minimum 1</span>
+      </div>
+      <button class="btn-primary" onclick="goToScreen4()">Continuer</button>
+      <button class="btn-secondary" onclick="goToScreen2()">Retour</button>
+    </div>
+
+    <div class="home-indicator">
+      <div class="home-bar dark"></div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════ SCREEN 4 ══════════════ -->
+  <div class="screen hidden" id="screen4">
+
+    <div class="s3-status">
+      <span class="time">9:41</span>
+      <div class="icons">
+        <svg width="17" height="12" viewBox="0 0 17 12">
+          <rect x="0" y="7" width="3" height="5" rx="0.5"/>
+          <rect x="4" y="5" width="3" height="7" rx="0.5"/>
+          <rect x="8" y="3" width="3" height="9" rx="0.5"/>
+          <rect x="12" y="0" width="3" height="12" rx="0.5"/>
+        </svg>
+        <svg width="16" height="12" viewBox="0 0 16 12">
+          <path d="M8 9.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/>
+          <path d="M8 6.2a5.1 5.1 0 0 1 3.6 1.5l1.4-1.4A7.1 7.1 0 0 0 8 4a7.1 7.1 0 0 0-5 2.3l1.4 1.4A5.1 5.1 0 0 1 8 6.2z"/>
+          <path d="M8 2.9a8.5 8.5 0 0 1 6 2.5L15.4 4A10.5 10.5 0 0 0 8 0.9a10.5 10.5 0 0 0-7.4 3.1L2 5.4A8.5 8.5 0 0 1 8 2.9z"/>
+        </svg>
+        <svg width="25" height="12" viewBox="0 0 25 12">
+          <rect x="0" y="1" width="21" height="10" rx="2.5" stroke="black" stroke-width="1" fill="none"/>
+          <rect x="22" y="3.5" width="2" height="5" rx="1" fill="black" opacity="0.4"/>
+          <rect x="1.5" y="2.5" width="17" height="7" rx="1.5" fill="black"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="s3-nav">
+      <button class="s3-back" onclick="goToScreen3()">‹</button>
+      <button class="s3-skip">Passer</button>
+    </div>
+
+    <div class="s3-progress progress-bar">
+      <div class="progress-seg done"></div>
+      <div class="progress-seg done"></div>
+      <div class="progress-seg done"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+    </div>
+    <p class="s3-step-label">Étape 3 sur 6</p>
+
+    <div class="s4-scroll">
+      <h2 class="s4-title">Pour ces sujets, que souhaitez-vous faire&nbsp;?</h2>
+      <p class="s4-subtitle">Choisissez une option pour chaque sujet.</p>
+      <div id="s4-cards"></div>
+    </div>
+
+    <div class="s4-bottom">
+      <button class="btn-primary" onclick="goToScreen5()">Continuer</button>
+      <button class="btn-secondary" onclick="goToScreen3()">Retour</button>
+    </div>
+
+    <div class="home-indicator">
+      <div class="home-bar dark"></div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════ SCREEN 5 ══════════════ -->
+  <div class="screen hidden" id="screen5">
+
+    <div class="s3-status">
+      <span class="time">9:41</span>
+      <div class="icons">
+        <svg width="17" height="12" viewBox="0 0 17 12">
+          <rect x="0" y="7" width="3" height="5" rx="0.5"/>
+          <rect x="4" y="5" width="3" height="7" rx="0.5"/>
+          <rect x="8" y="3" width="3" height="9" rx="0.5"/>
+          <rect x="12" y="0" width="3" height="12" rx="0.5"/>
+        </svg>
+        <svg width="16" height="12" viewBox="0 0 16 12">
+          <path d="M8 9.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/>
+          <path d="M8 6.2a5.1 5.1 0 0 1 3.6 1.5l1.4-1.4A7.1 7.1 0 0 0 8 4a7.1 7.1 0 0 0-5 2.3l1.4 1.4A5.1 5.1 0 0 1 8 6.2z"/>
+          <path d="M8 2.9a8.5 8.5 0 0 1 6 2.5L15.4 4A10.5 10.5 0 0 0 8 0.9a10.5 10.5 0 0 0-7.4 3.1L2 5.4A8.5 8.5 0 0 1 8 2.9z"/>
+        </svg>
+        <svg width="25" height="12" viewBox="0 0 25 12">
+          <rect x="0" y="1" width="21" height="10" rx="2.5" stroke="black" stroke-width="1" fill="none"/>
+          <rect x="22" y="3.5" width="2" height="5" rx="1" fill="black" opacity="0.4"/>
+          <rect x="1.5" y="2.5" width="17" height="7" rx="1.5" fill="black"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="s3-nav">
+      <button class="s3-back" onclick="navigate('screen5','screen4')">‹</button>
+      <button class="s3-skip">Passer</button>
+    </div>
+
+    <div class="s3-progress progress-bar">
+      <div class="progress-seg done"></div>
+      <div class="progress-seg done"></div>
+      <div class="progress-seg done"></div>
+      <div class="progress-seg done"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+    </div>
+    <p class="s3-step-label">Étape 4 sur 6</p>
+
+    <div class="s5-scroll">
+      <h2 class="s5-title">Où habitez-vous&nbsp;?</h2>
+      <p class="s5-subtitle">Pour vous mettre en relation avec des personnes proches de vous.</p>
+
+      <p class="s5-label">Votre localisation</p>
+
+      <div class="s5-input">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M8 1a5 5 0 0 1 5 5c0 3.5-5 9-5 9S3 9.5 3 6a5 5 0 0 1 5-5z" stroke="#aaa" stroke-width="1.5"/>
+          <circle cx="8" cy="6" r="1.5" stroke="#aaa" stroke-width="1.5"/>
+        </svg>
+        <input type="text" id="s5-city-input" placeholder="Adresse, ville ou code postal" autocomplete="off"
+               onkeydown="if(event.key==='Enter')geocodeCity(this.value)" />
+      </div>
+
+      <button class="s5-loc-btn" onclick="useCurrentLocation()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M8 1a5 5 0 0 1 5 5c0 3.5-5 9-5 9S3 9.5 3 6a5 5 0 0 1 5-5z" stroke="#6685f1" stroke-width="1.5"/>
+          <circle cx="8" cy="6" r="1.5" stroke="#6685f1" stroke-width="1.5"/>
+        </svg>
+        Aller à la localisation actuelle
+      </button>
+
+      <p class="s5-apercu-label">APERÇU</p>
+
+      <div class="fake-map">
+        <div id="s5-map"></div>
+        <div class="map-info" id="s5-map-info">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M8 1a5 5 0 0 1 5 5c0 3.5-5 9-5 9S3 9.5 3 6a5 5 0 0 1 5-5z" stroke="#6685f1" stroke-width="1.5"/>
+            <circle cx="8" cy="6" r="1.5" stroke="#6685f1" stroke-width="1.5"/>
+          </svg>
+          <strong id="s5-map-city">Nantes, France</strong>
+          <span>· ~ 10 km autour</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="s5-bottom">
+      <button class="btn-primary" onclick="navigate('screen5','screen6')">Continuer</button>
+      <button class="btn-secondary" onclick="navigate('screen5','screen4')">Retour</button>
+    </div>
+
+    <div class="home-indicator">
+      <div class="home-bar dark"></div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════ SCREEN 6 ══════════════ -->
+  <div class="screen hidden" id="screen6">
+
+    <div class="s3-status">
+      <span class="time">9:41</span>
+      <div class="icons">
+        <svg width="17" height="12" viewBox="0 0 17 12">
+          <rect x="0" y="7" width="3" height="5" rx="0.5"/>
+          <rect x="4" y="5" width="3" height="7" rx="0.5"/>
+          <rect x="8" y="3" width="3" height="9" rx="0.5"/>
+          <rect x="12" y="0" width="3" height="12" rx="0.5"/>
+        </svg>
+        <svg width="16" height="12" viewBox="0 0 16 12">
+          <path d="M8 9.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/>
+          <path d="M8 6.2a5.1 5.1 0 0 1 3.6 1.5l1.4-1.4A7.1 7.1 0 0 0 8 4a7.1 7.1 0 0 0-5 2.3l1.4 1.4A5.1 5.1 0 0 1 8 6.2z"/>
+          <path d="M8 2.9a8.5 8.5 0 0 1 6 2.5L15.4 4A10.5 10.5 0 0 0 8 0.9a10.5 10.5 0 0 0-7.4 3.1L2 5.4A8.5 8.5 0 0 1 8 2.9z"/>
+        </svg>
+        <svg width="25" height="12" viewBox="0 0 25 12">
+          <rect x="0" y="1" width="21" height="10" rx="2.5" stroke="black" stroke-width="1" fill="none"/>
+          <rect x="22" y="3.5" width="2" height="5" rx="1" fill="black" opacity="0.4"/>
+          <rect x="1.5" y="2.5" width="17" height="7" rx="1.5" fill="black"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="s3-nav">
+      <button class="s3-back" onclick="navigate('screen6','screen5')">‹</button>
+      <button class="s3-skip">Passer</button>
+    </div>
+
+    <div class="s3-progress progress-bar">
+      <div class="progress-seg done"></div>
+      <div class="progress-seg done"></div>
+      <div class="progress-seg done"></div>
+      <div class="progress-seg done"></div>
+      <div class="progress-seg done"></div>
+      <div class="progress-seg"></div>
+    </div>
+    <p class="s3-step-label">Étape 5 sur 6</p>
+
+    <div class="s6-scroll">
+      <h2 class="s6-title">Le système<br>de crédits</h2>
+      <p class="s6-subtitle">Une économie locale basée sur l'échange de savoirs.</p>
+
+      <div class="s6-illustration">
+        <span class="coin-plus" style="top:16px;left:52px">+</span>
+        <div class="coin-blob">
+          <div class="coin-stack">
+            <div class="coin-layer c1"><span class="coin-text">cr.</span></div>
+            <div class="coin-layer c2"></div>
+            <div class="coin-layer c3"></div>
+            <div class="coin-layer c4"></div>
+            <div class="coin-layer c5"></div>
+            <div class="coin-layer c6"></div>
+            <div class="coin-layer c7"></div>
+            <div class="coin-layer c8"></div>
+          </div>
+        </div>
+        <span class="coin-plus" style="top:44px;right:48px">+</span>
+        <span class="coin-plus" style="bottom:16px;right:62px">+</span>
+      </div>
+
+      <div class="s6-card">
+        <div class="s6-card-icon green">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M5 14l6-6 6 6" stroke="#27ae60" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="s6-card-body">
+          <p class="s6-card-title">Gagner des crédits</p>
+          <p class="s6-card-desc">Transmettez vos savoirs et gagnez des crédits par session donnée.</p>
+        </div>
+      </div>
+
+      <div class="s6-card">
+        <div class="s6-card-icon blue">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M5 8l6 6 6-6" stroke="#6685f1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="s6-card-body">
+          <p class="s6-card-title">Utiliser des crédits</p>
+          <p class="s6-card-desc">Réservez des cours pour apprendre. Chaque savoir a son propre coût.</p>
+        </div>
+      </div>
+
+      <div class="s6-card" style="margin-bottom:16px">
+        <div class="s6-card-icon yellow">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M11 4v14M4 11h14" stroke="#f5a623" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="s6-card-body">
+          <p class="s6-card-title">Acheter des crédits</p>
+          <p class="s6-card-desc">Si vous n'avez plus de crédits, vous pouvez en acheter à tout moment.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="s6-bottom">
+      <button class="btn-primary">Continuer</button>
+      <button class="btn-secondary" onclick="navigate('screen6','screen5')">Retour</button>
+    </div>
+
+    <div class="home-indicator">
+      <div class="home-bar dark"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  const emojiMap = {
+    'Photo argentique': '📷', 'Aquarelle': '🎨', 'Dessin': '✏️',
+    'Sculpture': '🗿', 'Couture': '🧵', 'Calligraphie': '🖋️',
+    'Cuisine': '🫕', 'Pâtisserie': '🥐', 'Jardinage': '🌱',
+    'Bricolage': '🔧', 'Fermentation': '🫙',
+    'Anglais': '🇬🇧', 'Espagnol': '🇪🇸', 'Italien': '🇮🇹',
+    'Allemand': '🇩🇪', 'Portugais': '🇵🇹', 'Mandarin': '🇨🇳', 'LSF': '🤟',
+    'Guitare': '🎸', 'Piano': '🎹', 'Chant': '🎤',
+    'Batterie': '🥁', 'Violon': '🎻', 'Djembé': '🪘'
+  };
+
+  function navigate(fromId, toId) {
+    document.getElementById(fromId).classList.add('hidden');
+    document.getElementById(toId).classList.remove('hidden');
+  }
+
+  function goToScreen2() { navigate('screen3', 'screen2'); navigate('screen4', 'screen2'); }
+  function goToScreen3() { navigate('screen4', 'screen3'); }
+
+  function goToScreen4() {
+    const selected = [...document.querySelectorAll('#screen3 .tag.selected')]
+      .map(el => el.textContent.replace('✓ ', '').trim());
+
+    const topics = selected.length > 0 ? selected : ['Cuisine', 'Photo argentique', 'Guitare', 'Italien'];
+
+    const container = document.getElementById('s4-cards');
+    container.innerHTML = topics.map(name => `
+      <div class="topic-card">
+        <div class="topic-card-header">
+          <span class="topic-card-name">${name}</span>
+        </div>
+        <div class="role-btns">
+          <button class="role-btn" onclick="selectRole(this)">J'apprends</button>
+          <button class="role-btn" onclick="selectRole(this)">J'enseigne</button>
+          <button class="role-btn" onclick="selectRole(this)">Les deux</button>
+        </div>
+      </div>
+    `).join('');
+
+    navigate('screen3', 'screen4');
+    document.querySelector('#screen4 .s4-scroll').scrollTop = 0;
+  }
+
+  function selectRole(btn) {
+    btn.closest('.role-btns').querySelectorAll('.role-btn')
+      .forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function toggleTag(el) {
+    el.classList.toggle('selected');
+    const count = document.querySelectorAll('#screen3 .tag.selected').length;
+    document.getElementById('s3-count').textContent =
+      count + ' catégorie' + (count > 1 ? 's' : '') + ' sélectionné' + (count > 1 ? 'es' : 'e');
+  }
+
+  /* ── SCREEN 5 : carte interactive ── */
+  let s5map = null, s5marker = null;
+
+  function goToScreen5() {
+    navigate('screen4', 'screen5');
+    setTimeout(() => {
+      if (!s5map) {
+        s5map = L.map('s5-map', { zoomControl: true, attributionControl: false })
+          .setView([47.2184, -1.5536], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(s5map);
+        s5marker = L.marker([47.2184, -1.5536]).addTo(s5map);
+      } else {
+        s5map.invalidateSize();
+      }
+    }, 150);
+  }
+
+  async function geocodeCity(query) {
+    if (!query.trim() || !s5map) return;
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&accept-language=fr`
+      );
+      const data = await res.json();
+      if (data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        const cityName = data[0].display_name.split(',')[0].trim();
+        s5map.setView([lat, lon], 13);
+        s5marker.setLatLng([lat, lon]);
+        document.getElementById('s5-map-city').textContent = cityName;
+      }
+    } catch(e) {}
+  }
+
+  function useCurrentLocation() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(async pos => {
+      const { latitude: lat, longitude: lon } = pos.coords;
+      if (s5map) {
+        s5map.setView([lat, lon], 13);
+        s5marker.setLatLng([lat, lon]);
+      }
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=fr`
+        );
+        const data = await res.json();
+        const city = data.address?.city || data.address?.town || data.address?.village || '';
+        document.getElementById('s5-city-input').value = city;
+        document.getElementById('s5-map-city').textContent = city;
+      } catch(e) {}
+    });
+  }
+</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </body>
 </html>
